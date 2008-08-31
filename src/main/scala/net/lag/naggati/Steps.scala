@@ -1,4 +1,4 @@
-package com.twitter.tomservo
+package net.lag.naggati
 
 import java.nio.ByteOrder
 

@@ -1,4 +1,4 @@
-package com.twitter.tomservo
+package net.lag.naggati
 
 import scala.collection.mutable
 import org.apache.mina.core.buffer.IoBuffer
@@ -10,9 +10,9 @@ class State(firstStep: Step, val session: IoSession, val out: ProtocolDecoderOut
     var buffer: IoBuffer = IoBuffer.EMPTY_BUFFER
 
     // track whether we allocated this IoBuffer or it was passed in from mina
-    private[tomservo] var dynamicBuffer = false
+    private[naggati] var dynamicBuffer = false
 
-    private[tomservo] var currentStep = firstStep
+    private[naggati] var currentStep = firstStep
 
     // next step to execute after the current step completes
     var nextStep: Step = End
@@ -30,7 +30,7 @@ class State(firstStep: Step, val session: IoSession, val out: ProtocolDecoderOut
      * After this method returns, 'buffer' is in flipped mode and contains
      * any previous data plus the new data.
      */
-    private[tomservo] def addBuffer(in: IoBuffer) = {
+    private[naggati] def addBuffer(in: IoBuffer) = {
         // buffers from mina always arrive in "flipped" mode.
         if (buffer.position > 0) {
             if (!dynamicBuffer) {

@@ -1,4 +1,4 @@
-package com.twitter.smile
+package net.lag.naggati
 
 import scala.actors.Actor
 import org.apache.mina.core.service.IoHandler

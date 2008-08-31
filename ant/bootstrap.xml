@@ -8,9 +8,9 @@
     <property name="test.source.dir" value="${basedir}/src/test/scala" />
     <property name="target.dir" value="${basedir}/target/classes" />
     <property name="test.target.dir" value="${basedir}/target/test-classes" />
-    
+
     <property environment="env" />
-    
+
     <property name="ivy.install.version" value="2.0.0-beta2" />
     <property name="ivy.jar.dir" value="${user.home}/.ivy2" />
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar" />
@@ -18,7 +18,7 @@
     <!-- override some ivy config -->
     <property name="ivy.distrib.dir" value="${dist.dir}" />
     <property name="ivy.deliver.ivy.pattern" value="${dist.dir}/[artifact]-[revision].[ext]" />
-    
+
     <!--
         download ivy from the web site so that it can be used without being
         installed. if the file has already been downloaded, we use a rename
@@ -34,14 +34,14 @@
         <get src="${ivy.url}" dest="${ivy.jar.file}.download" usetimestamp="true" />
         <move file="${ivy.jar.file}.download" tofile="${ivy.jar.file}" />
     </target>
-    
+
     <!-- import ivy's ant tasks -->
     <target name="install-ivy" depends="download-ivy">
         <path id="ivy.lib.path">
             <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
         </path>
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
-    </target>    
+    </target>
 
     <!-- define filename-friendly names for the OS variants -->
     <condition property="os.libsname" value="osx">

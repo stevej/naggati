@@ -1,6 +1,6 @@
-package com.twitter
+package net.lag.naggati
 
-import com.twitter.tomservo._
+import net.lag.naggati._
 import org.specs.runner.SpecsFileRunner
 
 

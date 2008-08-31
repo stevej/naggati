@@ -1,5 +1,4 @@
-package com.twitter.tomservo
-
+package net.lag.naggati
 
 // has to have a parameter so they don't become the same object:
 sealed abstract case class StepResult(val name: String)
@@ -9,7 +8,7 @@ case object COMPLETE extends StepResult("complete")
 
 abstract class Step {
     // an implicit (default) next-step can be set via the :: operator
-    private[tomservo] var next: Step = End
+    private[naggati] var next: Step = End
 
     def apply(): StepResult
 

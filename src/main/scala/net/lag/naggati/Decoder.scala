@@ -1,4 +1,4 @@
-package com.twitter.tomservo
+package net.lag.naggati
 
 import org.apache.mina.core.buffer.IoBuffer
 import org.apache.mina.core.session.IoSession
@@ -9,7 +9,7 @@ class ProtocolError(message: String) extends Exception(message)
 
 
 object Decoder {
-    protected[tomservo] var localState = new ThreadLocal[State]
+    protected[naggati] var localState = new ThreadLocal[State]
 }
 
 
