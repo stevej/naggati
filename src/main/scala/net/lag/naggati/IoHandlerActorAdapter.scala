@@ -6,7 +6,10 @@ import org.apache.mina.core.session.{IdleStatus, IoSession}
 import net.lag.logging.Logger
 
 
-// Actor messages for the Mina "events"
+/**
+ * All messages sent to an actor in reference to a Mina <code>IoSession</code>
+ * will be a subclass of <code>MinaMessage</code>.
+ */
 abstract sealed class MinaMessage
 object MinaMessage {
   case object SessionOpened extends MinaMessage
@@ -18,14 +21,26 @@ object MinaMessage {
 }
 
 
+/**
+ * Converts Mina <code>IoSession</code> events into messages to be sent to
+ * an actor.
+ */
 class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHandler {
 
   private val log = Logger.get
 
+  /**
+   * Send a message to the actor associated with this session, if there is
+   * one.
+   */
   def send(session: IoSession, message: MinaMessage) = {
     for (actor <- IoHandlerActorAdapter.actorFor(session)) { actor ! message }
   }
 
+  /**
+   * Send a message to the actor associated with this session. If no actor
+   * is associated with the session, run a block of code instead.
+   */
   def sendOr(session: IoSession, message: => MinaMessage)(f: => Unit) = {
     IoHandlerActorAdapter.actorFor(session) match {
       case None => f
@@ -64,10 +79,20 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
 object IoHandlerActorAdapter {
   private val ACTOR_KEY = "scala.mina.actor".intern
 
-  def actorFor(session: IoSession) = {
+  /**
+   * Return the actor associated with a Mina session, if any.
+   * An actor is created for each new Mina session automatically by the
+   * factory passed to an <code>IoHandlerActorAdapter</code>, or can be
+   * set manually by <code>setActorFor</code>.
+   */
+  def actorFor(session: IoSession): Option[Actor] = {
     val actor = session.getAttribute(ACTOR_KEY).asInstanceOf[Actor]
     if (actor == null) None else Some(actor)
   }
 
+  /**
+   * Manually set the actor that should receive I/O event messages for a
+   * given Mina <code>IoSession</code>.
+   */
   def setActorFor(session: IoSession, actor: Actor) = session.setAttribute(ACTOR_KEY, actor)
 }
