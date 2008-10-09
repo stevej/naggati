@@ -44,11 +44,6 @@ final object End extends Step {
 
 // FIXME: move these
 
-
-
-// when you know the byte count ahead of time, this is probably faster.
-
-
 class ReadDelimiterStep(getDelimiter: () => Byte, process: (Int) => Step) extends Step {
   def apply(): StepResult = {
     val delimiter = getDelimiter()

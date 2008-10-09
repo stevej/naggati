@@ -29,10 +29,17 @@ object Steps {
       }
     }
   }
-  
+
+  /**
+   * Ensure that a certain number of bytes is buffered before executing the
+   * next step, calling <code>getCount</code> each time new data arrives, to
+   * recompute the total number of bytes desired. If the desired number of
+   * bytes is a constant, the other <code>readBytes</code> below (which
+   * takes a constant int argument) may be faster.
+   */
   def readBytes(getCount: () => Int)(process: () => Step): Step =
     new ReadBytesStep(getCount, process)
-  
+
 
   private class ReadNBytesStep(count: Int, process: () => Step) extends Step {
     def apply(): StepResult = {
@@ -44,7 +51,7 @@ object Steps {
       }
     }
   }
-  
+
   /**
    * Ensure that at least <code>count</code> bytes are buffered before
    * executing the next processing step.
