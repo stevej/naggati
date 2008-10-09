@@ -6,6 +6,19 @@ case object NEED_DATA extends StepResult("need-data")
 case object COMPLETE extends StepResult("complete")
 
 
+/**
+ * Abstract base class for a "step" in a state machine. Steps are executed
+ * when called (via <code>apply</code>) and return either
+ * <code>NEED_DATA</code> if more data must be buffered before the step can
+ * complete, or <code>COMPLETE</code> if the step has processed the data
+ * buffered so far and processing should move on to the next step.
+ *
+ * <p>
+ * Steps can be put into an implicit order via the <code>::</code> operator,
+ * but many of the built-in steps (in the <code>Steps</code> object) take
+ * a code block as a parameter, with the code block providing the next Step
+ * to execute.
+ */
 abstract class Step {
   // an implicit (default) next-step can be set via the :: operator
   private[naggati] var next: Step = End
@@ -13,9 +26,12 @@ abstract class Step {
   def apply(): StepResult
 
   // s1 :: s2  -->  s1 then s2
-  def ::(s: Step) = { s.next = this; this }
+  def ::(s: Step) = { s.next = this; s }
 
-  def state = Decoder.localState.get()
+  /**
+   * Return the current state object for the current decoder.
+   */
+  protected def state = Decoder.localState.get()
 }
 
 /**
@@ -28,29 +44,10 @@ final object End extends Step {
 
 // FIXME: move these
 
-class ReadBytesStep(getCount: () => Int, process: () => Step) extends Step {
-  def apply(): StepResult = {
-    val count = getCount()
-    if (state.buffer.limit - state.buffer.position < count) {
-      NEED_DATA
-    } else {
-      state.nextStep = process()
-      COMPLETE
-    }
-  }
-}
+
 
 // when you know the byte count ahead of time, this is probably faster.
-class ReadNBytesStep(count: Int, process: () => Step) extends Step {
-  def apply(): StepResult = {
-    if (state.buffer.limit - state.buffer.position < count) {
-      NEED_DATA
-    } else {
-      state.nextStep = process()
-      COMPLETE
-    }
-  }
-}
+
 
 class ReadDelimiterStep(getDelimiter: () => Byte, process: (Int) => Step) extends Step {
   def apply(): StepResult = {

@@ -9,7 +9,9 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput
 /**
  * Container for state associated with a Mina <code>IoSession</code>,
  * including the current incoming data buffer and arbitrary key/value data
- * used by the decoding logic.
+ * used by the decoding logic. A state object is associated with a session
+ * when the session is first created, and stays attached as long as the
+ * session is alive.
  */
 class State protected[naggati](firstStep: Step, val session: IoSession, val out: ProtocolDecoderOutput) {
   /**

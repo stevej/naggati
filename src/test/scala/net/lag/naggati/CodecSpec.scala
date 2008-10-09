@@ -197,5 +197,17 @@ object CodecSpec extends Specification {
       quickDecode(decoder, buffer)
       written mustEqual List("cat", 23, "yay!")
     }
+
+    "chain 3 implicit steps together" in {
+      var list: List[String] = Nil
+      val step1 = step { () => list = "a" :: list; COMPLETE }
+      val step2 = step { () => list = "b" :: list; COMPLETE }
+      val step3 = step { () => list = "c" :: list; NEED_DATA }
+      val x = step1 :: step2 :: step3
+      val decoder = new Decoder(x)
+      val buffer = IoBuffer.allocate(1)
+      quickDecode(decoder, buffer)
+      list mustEqual List("c", "b", "a")
+    }
   }
 }
