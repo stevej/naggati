@@ -212,7 +212,7 @@
   <!-- RELEASE -->
 
   <target name="release" depends="package">
-    <ivy:publish resolver="push" overwrite="true">
+    <ivy:publish resolver="push-local" overwrite="true">
       <artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
     </ivy:publish>
     <copy file="INSTALL" todir="${dist.dir}" failonerror="false" />
@@ -229,6 +229,12 @@
       basedir="${basedir}/dist"
       includes="${ivy.module}-${ivy.revision}/**"
       excludes="${ivy.module}-${ivy.revision}/libs/**" />
+  </target>
+
+  <target name="push" depends="package">
+    <ivy:publish resolver="push" overwrite="true">
+      <artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
+    </ivy:publish>
   </target>
 
 </project>

@@ -14,6 +14,8 @@
     <property name="ivy.install.version" value="2.0.0-beta2" />
     <property name="ivy.jar.dir" value="${user.home}/.ivy2" />
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar" />
+    <property name="jsch.install.version" value="0.1.29" />
+    <property name="jsch.jar.file" value="${ivy.jar.dir}/jsch-${jsch.install.version}.jar" />
 
     <!-- override some ivy config -->
     <property name="ivy.distrib.dir" value="${dist.dir}" />
@@ -33,6 +35,13 @@
         <property name="ivy.url" value="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" />
         <get src="${ivy.url}" dest="${ivy.jar.file}.download" usetimestamp="true" />
         <move file="${ivy.jar.file}.download" tofile="${ivy.jar.file}" />
+
+        <condition property="jsch.url" value="file:${jsch.jar.file}">
+            <available file="${jsch.jar.file}" />
+        </condition>
+        <property name="jsch.url" value="http://repo1.maven.org/maven2/jsch/jsch/${jsch.install.version}/jsch-${jsch.install.version}.jar" />
+        <get src="${jsch.url}" dest="${jsch.jar.file}.download" usetimestamp="true" />
+        <move file="${jsch.jar.file}.download" tofile="${jsch.jar.file}" />
     </target>
 
     <!-- import ivy's ant tasks -->
