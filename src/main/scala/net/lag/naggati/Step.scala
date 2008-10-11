@@ -34,6 +34,7 @@ abstract class Step {
   protected def state = Decoder.localState.get()
 }
 
+
 /**
  * Special Step which means "end of decoding; start over".
  */
@@ -44,28 +45,3 @@ final object End extends Step {
 
 // FIXME: move these
 
-class ReadDelimiterStep(getDelimiter: () => Byte, process: (Int) => Step) extends Step {
-  def apply(): StepResult = {
-    val delimiter = getDelimiter()
-    state.buffer.indexOf(delimiter) match {
-      case -1 =>
-        NEED_DATA
-      case n =>
-        state.nextStep = process(n - state.buffer.position + 1)
-        COMPLETE
-    }
-  }
-}
-
-// when you know the delimiter ahead of time, this is probably faster.
-class ReadNDelimiterStep(delimiter: Byte, process: (Int) => Step) extends Step {
-  def apply(): StepResult = {
-    state.buffer.indexOf(delimiter) match {
-      case -1 =>
-        NEED_DATA
-      case n =>
-        state.nextStep = process(n - state.buffer.position + 1)
-        COMPLETE
-    }
-  }
-}
