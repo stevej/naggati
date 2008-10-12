@@ -73,10 +73,12 @@ object Steps {
 
   private class ReadUntilStep(filter: (Byte) => Boolean, process: (Int) => Step) extends Step {
     def apply(): StepResult = {
-      var i = state.buffer.position
+      val prev = state.asInt("_until")
+      var i = state.buffer.position + prev
       while (i < state.buffer.limit) {
         if (filter(state.buffer.get(i))) {
           state.nextStep = process(i - state.buffer.position + 1)
+          state.asInt("_until") = 0
           return COMPLETE
         }
         i += 1

@@ -162,6 +162,8 @@ object CodecSpec extends Specification {
       out mustEqual -1
       quickDecode(decoder, "bad")
       out mustEqual 5
+      quickDecode(decoder, "e")
+      out mustEqual 2
     }
 
     "combine reading modes" in {

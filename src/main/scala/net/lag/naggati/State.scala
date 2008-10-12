@@ -33,7 +33,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
    * Arbitrary key/value data that can be used by steps to track any
    * ongoing state.
    */
-  val data: mutable.Map[String, Object] = new mutable.HashMap[String, Object]
+  val data: mutable.Map[String, Any] = new mutable.HashMap[String, Any]
 
 
   /**
@@ -76,7 +76,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
   /**
    * Set a named value in the state map in <code>data</code>.
    */
-  def update(key: String, value: Object) = data(key) = value
+  def update(key: String, value: Any) = data(key) = value
 
   /**
    * Clear all current state, return to the first step of the state machine,
@@ -90,4 +90,24 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
     buffer = IoBuffer.EMPTY_BUFFER
     dynamicBuffer = false
   }
+
+
+  trait IntMapping {
+    def apply(key: String): Int
+    def update(key: String, value: Int)
+  }
+
+  private val intMapping = new IntMapping {
+    def apply(key: String): Int = data.get(key) match {
+      case None => 0
+      case Some(x) => x.asInstanceOf[Int]
+    }
+    def update(key: String, value: Int) = data(key) = value
+  }
+
+  /**
+   * Return a view of the key/value data store (in <code>data</code>) where
+   * the values are all ints that default to 0 if not present yet.
+   */
+  def asInt = intMapping
 }
