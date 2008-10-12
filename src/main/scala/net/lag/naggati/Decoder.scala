@@ -33,15 +33,19 @@ class Decoder(private val firstStep: Step) extends ProtocolDecoder {
     // won't do any good.
   }
 
-  @throws(classOf[Exception])
-  def decode(session: IoSession, in: IoBuffer, out: ProtocolDecoderOutput): Unit = {
-    val state = session.getAttribute(STATE_KEY) match {
+  def stateFor(session: IoSession, out: ProtocolDecoderOutput) = {
+    session.getAttribute(STATE_KEY) match {
       case null =>
         val newState = new State(firstStep, session, out)
         session.setAttribute(STATE_KEY, newState)
         newState
       case x => x.asInstanceOf[State]
     }
+  }
+
+  @throws(classOf[Exception])
+  def decode(session: IoSession, in: IoBuffer, out: ProtocolDecoderOutput): Unit = {
+    val state = stateFor(session, out)
     state.addBuffer(in)
 
     // stuff the decoder state into a thread-local so that codec steps can reach it easily.
