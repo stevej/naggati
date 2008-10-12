@@ -5,6 +5,10 @@ import org.apache.mina.core.session.IoSession
 import org.apache.mina.filter.codec._
 
 
+/**
+ * Convenience exception class to allow decoders to indicate a protocol
+ * error.
+ */
 class ProtocolError(message: String) extends Exception(message)
 
 

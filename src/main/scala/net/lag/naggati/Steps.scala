@@ -59,7 +59,6 @@ object Steps {
     }
   }
 
-  // when you know the delimiter ahead of time, this is probably faster.
   private class ReadNDelimiterStep(delimiter: Byte, process: (Int) => Step) extends Step {
     def apply(): StepResult = {
       state.buffer.indexOf(delimiter) match {
@@ -69,6 +68,20 @@ object Steps {
           state.nextStep = process(n - state.buffer.position + 1)
           COMPLETE
       }
+    }
+  }
+
+  private class ReadUntilStep(filter: (Byte) => Boolean, process: (Int) => Step) extends Step {
+    def apply(): StepResult = {
+      var i = state.buffer.position
+      while (i < state.buffer.limit) {
+        if (filter(state.buffer.get(i))) {
+          state.nextStep = process(i - state.buffer.position + 1)
+          return COMPLETE
+        }
+        i += 1
+      }
+      NEED_DATA
     }
   }
 
@@ -198,7 +211,18 @@ object Steps {
    */
   def readLine(process: (String) => Step): Step = readLine(true, "UTF-8")(process)
 
-  // read 1-byte ints:
+  /**
+   * Read until a given condition is true on a byte in the buffer. Until a
+   * byte passes the conditional filter, more data will be buffered. Once
+   * the condition is true, the offset of the byte that matches the condition
+   * will be passed to the next step.
+   */
+  def readUntil(filter: (Byte) => Boolean)(process: (Int) => Step): Step =
+    new ReadUntilStep(filter, process)
+
+  /**
+   * Read a single byte and pass in on to the next step.
+   */
   def readInt8(process: (Byte) => Step): Step = new ReadNBytesStep(1, { () => process(state.buffer.get) })
 
   // read 4-byte ints:

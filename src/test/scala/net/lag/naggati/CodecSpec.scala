@@ -150,6 +150,20 @@ object CodecSpec extends Specification {
       written mustEqual List("hello there\r\n", "cats don't use CR\n", "thing\r\n", "\n", "stop\r\n", "\r\n", "okay.\n")
     }
 
+    "read until" in {
+      var out = -1
+      val step = readUntil(b => (b & 0x01) == 0x01) { n =>
+        out = n
+        state.buffer.position(state.buffer.position + n)
+        End
+      }
+      val decoder = new Decoder(step)
+      quickDecode(decoder, "bdd")
+      out mustEqual -1
+      quickDecode(decoder, "bad")
+      out mustEqual 5
+    }
+
     "combine reading modes" in {
       val step = readInt32 { len =>
         readByteBuffer(len) { bytes =>
