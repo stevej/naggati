@@ -28,7 +28,7 @@ object CodecSpec extends Specification {
       fakeDecoderOutput = new ProtocolDecoderOutput {
         override def flush = {}
         override def write(obj: AnyRef) = {
-          written = written + obj
+          written = written ++ List(obj)
         }
       }
     }
