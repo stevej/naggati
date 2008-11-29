@@ -2,7 +2,7 @@ package net.lag.naggati
 
 import net.lag.naggati.Steps._
 import org.apache.mina.core.buffer.IoBuffer
-import org.apache.mina.core.session.{AbstractIoSession, DummySession, IoSession}
+import org.apache.mina.core.session.{DummySession, IoSession}
 import org.apache.mina.filter.codec._
 import org.specs._
 import java.nio.ByteOrder
@@ -28,7 +28,7 @@ object CodecSpec extends Specification {
       fakeDecoderOutput = new ProtocolDecoderOutput {
         override def flush = {}
         override def write(obj: AnyRef) = {
-          written = written + obj
+          written = written ++ List(obj)
         }
       }
     }
