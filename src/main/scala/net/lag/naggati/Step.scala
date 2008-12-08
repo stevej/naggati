@@ -41,7 +41,3 @@ abstract class Step {
 final object End extends Step {
   override def apply(): StepResult = COMPLETE
 }
-
-
-// FIXME: move these
-
