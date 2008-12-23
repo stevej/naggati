@@ -15,6 +15,7 @@
       <arg pathref="bootstrap.path" />
       <arg value="-d" />
       <arg value="${docs.target.dir}/scaladoc" />
+      <arg value="-format-markdown" />
       <arg value="-sourcepath" />
       <arg value="${source.dir}/scala" />
       <arg value="-windowtitle" />
