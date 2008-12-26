@@ -1,0 +1,27 @@
+
+**naggati** - protocol builder for Mina
+
+*Naggati* is Inuktitut for "make fit". This library allows you to write
+mina `ProtocolDecoder` objects to decode incoming byte streams by describing
+the protocol in a mini-DSL which generates a state machine. The protocol
+decoder can be written in a threaded, sequential way, even though mina will
+be invoking it asynchronously.
+
+An example decoder for [ASN.1 tags](net/lag/naggati/asn1/Tag.scala.html) is
+included.
+
+The Primary class is [Decoder](net/lag/naggati/Decoder.html) which accepts
+a starting [Step](net/lag/naggati/Step.html). The helper object
+[Steps](net/lag/naggati/Steps$object.html) contains methods for creating
+steps. Typically they describe waiting for some complete event (a line
+terminated by a linefeed, or maybe just four bytes) and then code to process
+that data, which also returns the next step.
+
+The special step [End](net/lag/naggati/End$object.html) indicates that a
+complete object has been read, and processing should start over again at the
+first step. The [ProtocolError](net/lag/naggati/ProtocolError.html) exception
+can be used to indicate errors.
+
+[IoHandlerActorAdapter](net/lag/naggati/IoHandlerActorAdapter.html) is a
+convenience class that converts mina events into actor messages, and creates
+a new actor for each new mina `IoSession`.
