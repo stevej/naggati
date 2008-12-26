@@ -7,7 +7,7 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput
 
 
 /**
- * Container for state associated with a Mina <code>IoSession</code>,
+ * Container for state associated with a Mina `IoSession`,
  * including the current incoming data buffer and arbitrary key/value data
  * used by the decoding logic. A state object is associated with a session
  * when the session is first created, and stays attached as long as the
@@ -15,7 +15,7 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput
  */
 class State protected[naggati](firstStep: Step, val session: IoSession, val out: ProtocolDecoderOutput) {
   /**
-   * Current buffer being processed.
+   * Current (mina) buffer being processed.
    */
   var buffer: IoBuffer = IoBuffer.EMPTY_BUFFER
 
@@ -38,11 +38,11 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
 
   /**
    * Add an IoBuffer from mina into our current state. If our current
-   * buffer is empty, we optimistically just store the buffer from mina,
+   * buffer is empty, we optimistically store the buffer from mina,
    * in the hopes that it can be completely processed inline. If we have
    * leftovers, though, we build our own cumulative buffer.
    *
-   * After this method returns, 'buffer' is in flipped mode and contains
+   * After this method returns, `buffer` is in flipped mode and contains
    * any previous data plus the new data.
    */
   private[naggati] def addBuffer(in: IoBuffer) = {
@@ -69,12 +69,12 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
   }
 
   /**
-   * Retrieve a named value from the state map in <code>data</code>.
+   * Retrieve a named value from the state map in `data`.
    */
   def apply(key: String) = data(key)
 
   /**
-   * Set a named value in the state map in <code>data</code>.
+   * Set a named value in the state map in `data`.
    */
   def update(key: String, value: Any) = data(key) = value
 
@@ -106,7 +106,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
   }
 
   /**
-   * Return a view of the key/value data store (in <code>data</code>) where
+   * Return a view of the key/value data store (in `data`) where
    * the values are all ints that default to 0 if not present yet.
    */
   def asInt = intMapping

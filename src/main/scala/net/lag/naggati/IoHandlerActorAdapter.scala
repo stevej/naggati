@@ -8,7 +8,7 @@ import net.lag.logging.Logger
 
 /**
  * All messages sent to an actor in reference to a Mina <code>IoSession</code>
- * will be a subclass of <code>MinaMessage</code>.
+ * will be a subclass of `MinaMessage`.
  */
 abstract sealed class MinaMessage
 object MinaMessage {
@@ -22,7 +22,7 @@ object MinaMessage {
 
 
 /**
- * Converts Mina <code>IoSession</code> events into messages to be sent to
+ * Converts Mina `IoSession` events into messages to be sent to
  * an actor.
  */
 class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHandler {
@@ -82,8 +82,8 @@ object IoHandlerActorAdapter {
   /**
    * Return the actor associated with a Mina session, if any.
    * An actor is created for each new Mina session automatically by the
-   * factory passed to an <code>IoHandlerActorAdapter</code>, or can be
-   * set manually by <code>setActorFor</code>.
+   * factory passed to an `IoHandlerActorAdapter`, or can be
+   * set manually by `setActorFor`.
    */
   def actorFor(session: IoSession): Option[Actor] = {
     val actor = session.getAttribute(ACTOR_KEY).asInstanceOf[Actor]
@@ -92,7 +92,7 @@ object IoHandlerActorAdapter {
 
   /**
    * Manually set the actor that should receive I/O event messages for a
-   * given Mina <code>IoSession</code>.
+   * given Mina `IoSession`.
    */
   def setActorFor(session: IoSession, actor: Actor) = session.setAttribute(ACTOR_KEY, actor)
 }

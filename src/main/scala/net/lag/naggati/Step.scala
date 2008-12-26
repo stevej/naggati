@@ -8,14 +8,13 @@ case object COMPLETE extends StepResult("complete")
 
 /**
  * Abstract base class for a "step" in a state machine. Steps are executed
- * when called (via <code>apply</code>) and return either
- * <code>NEED_DATA</code> if more data must be buffered before the step can
- * complete, or <code>COMPLETE</code> if the step has processed the data
+ * when called (via `apply`) and return either
+ * `NEED_DATA` if more data must be buffered before the step can
+ * complete, or `COMPLETE` if the step has processed the data
  * buffered so far and processing should move on to the next step.
  *
- * <p>
- * Steps can be put into an implicit order via the <code>::</code> operator,
- * but many of the built-in steps (in the <code>Steps</code> object) take
+ * Steps can be put into an implicit order via the `::` operator,
+ * but many of the built-in steps (in the `Steps` object) take
  * a code block as a parameter, with the code block providing the next Step
  * to execute.
  */
