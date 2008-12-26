@@ -113,6 +113,20 @@ object CodecSpec extends Specification {
       scored mustEqual true
     }
 
+    "read up to a multi-byte delimiter" in {
+      var found: List[String] = Nil
+      val step = readDelimiterBuffer("cat".getBytes) { buffer =>
+        found = new String(buffer) :: found
+        End
+      }
+      val decoder = new Decoder(step)
+
+      quickDecode(decoder, "quickly the catapult sang.")
+      found mustEqual List("quickly the cat")
+      quickDecode(decoder, " then the cat jumped on cathy.")
+      found mustEqual List(" jumped on cat", "apult sang. then the cat", "quickly the cat")
+    }
+
     "read up to a delimiter, in chunks" in {
       val step = readDelimiterBuffer('\n'.toByte) { buffer =>
         state.out.write(new String(buffer))

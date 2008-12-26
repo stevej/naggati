@@ -107,6 +107,31 @@ object Steps {
   }
 
   /**
+   * Read bytes until a multi-byte delimiter is present, in its entirety.
+   * The number of bytes up to and including the delimiter is passed to
+   * the next processing step.
+   */
+  def readDelimiter(delimiter: Array[Byte])(process: (Int) => Step) = step {
+    val oldpos = state.buffer.position
+    var i = 0
+    var done = false
+    val check = new Array[Byte](delimiter.size)
+    while (oldpos + i <= state.buffer.limit - delimiter.size && !done) {
+      if (state.buffer.get(oldpos + i) == delimiter(0)) {
+        state.buffer.position(oldpos + i)
+        state.buffer.get(check)
+        state.buffer.position(oldpos)
+        if (delimiter deepEquals check) {
+          state.nextStep = process(i + delimiter.size)
+          done = true
+        }
+      }
+      i += 1
+    }
+    if (done) COMPLETE else NEED_DATA
+  }
+
+  /**
    * Read bytes until a delimiter is present, and pass a buffer containing
    * the bytes up to and including the delimiter to the next processing step.
    * `getDelimiter` is called each time new data arrives.
@@ -127,6 +152,19 @@ object Steps {
    * performance penalty.
    */
   def readDelimiterBuffer(delimiter: Byte)(process: (Array[Byte]) => Step) =
+    readDelimiter(delimiter) { n =>
+      val byteBuffer = new Array[Byte](n)
+      state.buffer.get(byteBuffer)
+      process(byteBuffer)
+    }
+
+  /**
+   * Read bytes until a delimiter is present, and pass a buffer containing
+   * the bytes up to and including the delimiter to the next processing step.
+   * The creation and copying of a temporary byte buffer may have a small
+   * performance penalty.
+   */
+  def readDelimiterBuffer(delimiter: Array[Byte])(process: (Array[Byte]) => Step) =
     readDelimiter(delimiter) { n =>
       val byteBuffer = new Array[Byte](n)
       state.buffer.get(byteBuffer)
