@@ -4,7 +4,7 @@
     <delete dir="${docs.target.dir}/scaladoc" />
     <mkdir dir="${docs.target.dir}/scaladoc" />
     <pathconvert property="doc.sources" pathsep=" ">
-      <fileset dir="${source.dir}" includes="**/*.scala" />
+      <fileset dir="${source.dir}" includes="scala/**/*.scala" />
     </pathconvert>
     <echo message="Building vscaladoc..." />
     <java classname="org.scala_tools.vscaladoc.Main" fork="true" failonerror="true">
@@ -21,6 +21,7 @@
       <arg value="${ivy.module} ${ivy.revision}" />
       <arg value="-doctitle" />
       <arg value="${ivy.module} ${ivy.revision}" />
+      <arg value="-format-markdown" />
       <arg value="-linksource" />
       <arg line="${doc.sources}" />
     </java>

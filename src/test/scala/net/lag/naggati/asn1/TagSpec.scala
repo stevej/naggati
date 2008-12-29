@@ -12,7 +12,6 @@ object TagSpec extends Specification {
   private var fakeSession: IoSession = null
   private var fakeDecoderOutput: ProtocolDecoderOutput = null
 
-  // FIXME push this down into configgy
   def unhexlify(s: String): Array[Byte] = {
     val buffer = new Array[Byte](s.length / 2)
     for (val i <- 0.until(s.length, 2)) {
@@ -20,6 +19,7 @@ object TagSpec extends Specification {
     }
     buffer
   }
+
 
   private class TagDecoder extends Decoder(Tag.reader("out")) {
     val fakeSession = new DummySession

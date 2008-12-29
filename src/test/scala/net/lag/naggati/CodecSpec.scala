@@ -50,6 +50,23 @@ object CodecSpec extends Specification {
       scored mustEqual true
     }
 
+    "read a variable number of bytes" in {
+      var n = 2
+      var rv: List[String] = Nil
+      val step = readBytes(n) {
+        val byteBuffer = new Array[Byte](n)
+        state.buffer.get(byteBuffer)
+        rv = new String(byteBuffer) :: rv
+        n += 1
+        End
+      }
+      val decoder = new Decoder(step)
+
+      quickDecode(decoder, "abcde")
+      n mustEqual 4
+      rv mustEqual List("cde", "ab")
+    }
+
     "read a fixed number of bytes, in chunks" in {
       // chunk up every 4 bytes:
       val step = readByteBuffer(4) { buffer =>
@@ -94,6 +111,20 @@ object CodecSpec extends Specification {
       decoder.decode(fakeSession, IoBuffer.wrap(" kitty\n".getBytes), fakeDecoderOutput)
       written mustEqual Nil
       scored mustEqual true
+    }
+
+    "read up to a multi-byte delimiter" in {
+      var found: List[String] = Nil
+      val step = readDelimiterBuffer("cat".getBytes) { buffer =>
+        found = new String(buffer) :: found
+        End
+      }
+      val decoder = new Decoder(step)
+
+      quickDecode(decoder, "quickly the catapult sang.")
+      found mustEqual List("quickly the cat")
+      quickDecode(decoder, " then the cat jumped on cathy.")
+      found mustEqual List(" jumped on cat", "apult sang. then the cat", "quickly the cat")
     }
 
     "read up to a delimiter, in chunks" in {
@@ -216,9 +247,9 @@ object CodecSpec extends Specification {
 
     "chain 3 implicit steps together" in {
       var list: List[String] = Nil
-      val step1 = step { () => list = "a" :: list; COMPLETE }
-      val step2 = step { () => list = "b" :: list; COMPLETE }
-      val step3 = step { () => list = "c" :: list; NEED_DATA }
+      val step1 = step { list = "a" :: list; COMPLETE }
+      val step2 = step { list = "b" :: list; COMPLETE }
+      val step3 = step { list = "c" :: list; NEED_DATA }
       val x = step1 :: step2 :: step3
       val decoder = new Decoder(x)
       val buffer = IoBuffer.allocate(1)

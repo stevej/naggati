@@ -71,6 +71,8 @@ Properties that can change behavior
     any extra files to copy into dist/<p> during compile
 - config.extra
     any extra files to copy into config/ during compile
+- pack.deps
+    pack dependent jars into the final dist jar, to remove dependencies
 
 
 Extra ivy thingies
