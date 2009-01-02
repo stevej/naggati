@@ -77,5 +77,6 @@ class Decoder(private val firstStep: Step) extends ProtocolDecoder {
     } while (! done)
 
     state.buffer.compact
+    state.buffer.limit(state.buffer.position)
   }
 }

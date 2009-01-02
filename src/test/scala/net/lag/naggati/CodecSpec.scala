@@ -2,6 +2,7 @@ package net.lag.naggati
 
 import net.lag.naggati.Steps._
 import org.apache.mina.core.buffer.IoBuffer
+import org.apache.mina.core.filterchain.IoFilter
 import org.apache.mina.core.session.{DummySession, IoSession}
 import org.apache.mina.filter.codec._
 import org.specs._
@@ -26,7 +27,7 @@ object CodecSpec extends Specification {
       written = Nil
       fakeSession = new DummySession
       fakeDecoderOutput = new ProtocolDecoderOutput {
-        override def flush = {}
+        override def flush(nextFilter: IoFilter.NextFilter, s: IoSession) = {}
         override def write(obj: AnyRef) = {
           written = written ++ List(obj)
         }
@@ -255,6 +256,16 @@ object CodecSpec extends Specification {
       val buffer = IoBuffer.allocate(1)
       quickDecode(decoder, buffer)
       list mustEqual List("c", "b", "a")
+    }
+
+    "handle being called multiple times with the same buffer (mina 2.0-M4)" in {
+      val step = readLine { line => state.out.write(line); End }
+      val decoder = new Decoder(step)
+
+      val buffer = IoBuffer.wrap("another line.\r\n".getBytes)
+      decoder.decode(fakeSession, buffer, fakeDecoderOutput)
+      decoder.decode(fakeSession, buffer, fakeDecoderOutput)
+      written mustEqual List("another line.")
     }
   }
 }
