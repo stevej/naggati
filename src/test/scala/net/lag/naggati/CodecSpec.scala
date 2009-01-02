@@ -257,5 +257,15 @@ object CodecSpec extends Specification {
       quickDecode(decoder, buffer)
       list mustEqual List("c", "b", "a")
     }
+
+    "handle being called multiple times with the same buffer (mina 2.0-M4)" in {
+      val step = readLine { line => state.out.write(line); End }
+      val decoder = new Decoder(step)
+
+      val buffer = IoBuffer.wrap("another line.\r\n".getBytes)
+      decoder.decode(fakeSession, buffer, fakeDecoderOutput)
+      decoder.decode(fakeSession, buffer, fakeDecoderOutput)
+      written mustEqual List("another line.")
+    }
   }
 }
