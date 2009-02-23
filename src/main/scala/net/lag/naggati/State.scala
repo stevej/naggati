@@ -87,7 +87,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
   /**
    * Retrieve a named value from the state map in `data`.
    */
-  def apply(key: String) = data(key)
+  def apply[T](key: String) = data(key).asInstanceOf[T]
 
   /**
    * Set a named value in the state map in `data`.
