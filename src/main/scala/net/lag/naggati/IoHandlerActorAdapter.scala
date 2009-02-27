@@ -17,13 +17,14 @@
 package net.lag.naggati
 
 import scala.actors.Actor
+import scala.collection.immutable
 import org.apache.mina.core.service.IoHandler
 import org.apache.mina.core.session.{IdleStatus, IoSession}
 import net.lag.logging.Logger
 
 
 /**
- * All messages sent to an actor in reference to a Mina <code>IoSession</code>
+ * All messages sent to an actor in reference to a Mina `IoSession`
  * will be a subclass of `MinaMessage`.
  */
 abstract sealed class MinaMessage
@@ -34,6 +35,17 @@ object MinaMessage {
   case class ExceptionCaught(cause: Throwable) extends MinaMessage
   case class SessionIdle(status: IdleStatus) extends MinaMessage
   case object SessionClosed extends MinaMessage
+
+  type Filter = Set[Class[_ <: MinaMessage]]
+
+  val defaultFilter: Filter = immutable.Set(
+    // FIXME: is there a better way to get an object's class?
+    MinaMessage.SessionOpened.getClass.asInstanceOf[Class[MinaMessage]],
+    classOf[MinaMessage.MessageReceived],
+    classOf[MinaMessage.MessageSent],
+    classOf[MinaMessage.ExceptionCaught],
+    classOf[MinaMessage.SessionIdle],
+    MinaMessage.SessionClosed.getClass.asInstanceOf[Class[MinaMessage]])
 }
 
 
@@ -50,7 +62,11 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
    * one.
    */
   def send(session: IoSession, message: MinaMessage) = {
-    for (actor <- IoHandlerActorAdapter.actorFor(session)) { actor ! message }
+    for (actor <- IoHandlerActorAdapter.actorFor(session)) {
+      if (IoHandlerActorAdapter.filterFor(session) contains message.getClass.asInstanceOf[Class[MinaMessage]]) {
+        actor ! message
+      }
+    }
   }
 
   /**
@@ -94,6 +110,7 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
 
 object IoHandlerActorAdapter {
   private val ACTOR_KEY = "scala.mina.actor".intern
+  private val FILTER_KEY = "scala.mina.filter".intern
 
   /**
    * Return the actor associated with a Mina session, if any.
@@ -111,4 +128,8 @@ object IoHandlerActorAdapter {
    * given Mina `IoSession`.
    */
   def setActorFor(session: IoSession, actor: Actor) = session.setAttribute(ACTOR_KEY, actor)
+  
+  def filterFor(session: IoSession) = {
+    session.getAttribute(FILTER_KEY, MinaMessage.defaultFilter).asInstanceOf[MinaMessage.Filter]
+  }
 }
