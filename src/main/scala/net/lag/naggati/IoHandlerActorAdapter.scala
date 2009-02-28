@@ -38,14 +38,16 @@ object MinaMessage {
 
   type Filter = Set[Class[_ <: MinaMessage]]
 
+  def classOfObj[T <: AnyRef](x: T) = x.getClass.asInstanceOf[Class[T]]
+
   val defaultFilter: Filter = immutable.Set(
     // FIXME: is there a better way to get an object's class?
-    MinaMessage.SessionOpened.getClass.asInstanceOf[Class[MinaMessage]],
+    classOfObj(MinaMessage.SessionOpened),
     classOf[MinaMessage.MessageReceived],
     classOf[MinaMessage.MessageSent],
     classOf[MinaMessage.ExceptionCaught],
     classOf[MinaMessage.SessionIdle],
-    MinaMessage.SessionClosed.getClass.asInstanceOf[Class[MinaMessage]])
+    classOfObj(MinaMessage.SessionClosed))
 }
 
 
@@ -63,7 +65,7 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
    */
   def send(session: IoSession, message: MinaMessage) = {
     for (actor <- IoHandlerActorAdapter.actorFor(session)) {
-      if (IoHandlerActorAdapter.filterFor(session) contains message.getClass.asInstanceOf[Class[MinaMessage]]) {
+      if (IoHandlerActorAdapter.filterFor(session) contains classOfObj(message)) {
         actor ! message
       }
     }
