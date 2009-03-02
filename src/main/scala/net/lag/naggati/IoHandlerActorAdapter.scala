@@ -140,4 +140,12 @@ object IoHandlerActorAdapter {
       session.removeAttribute(KEY)
     }
   }
+
+  /**
+   * Manually set the actor that should receive I/O event messages for a
+   * given Mina `IoSession`.
+   */
+  def setActorFor(session: IoSession, actor: Actor) = {
+    sessionInfo(session) = SessionInfo(Some(actor), sessionInfo(session).filter)
+  }
 }
