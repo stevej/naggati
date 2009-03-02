@@ -41,7 +41,6 @@ object MinaMessage {
   def classOfObj[T <: AnyRef](x: T) = x.getClass.asInstanceOf[Class[T]]
 
   val defaultFilter: Filter = immutable.Set(
-    // FIXME: is there a better way to get an object's class?
     classOfObj(MinaMessage.SessionOpened),
     classOf[MinaMessage.MessageReceived],
     classOf[MinaMessage.MessageSent],
@@ -49,6 +48,9 @@ object MinaMessage {
     classOf[MinaMessage.SessionIdle],
     classOfObj(MinaMessage.SessionClosed))
 }
+
+
+case class SessionInfo(actor: Option[Actor], filter: MinaMessage.Filter)
 
 
 /**
@@ -59,15 +61,25 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
 
   private val log = Logger.get
 
+  // initialize the session and attach some state to it.
+  def sessionCreated(session: IoSession) = {
+    val info = IoHandlerActorAdapter.sessionInfo(session)
+    // don't overwrite an existing actor
+    info.actor match {
+      case None =>
+        IoHandlerActorAdapter.sessionInfo(session) = SessionInfo(Some(actorFactory(session)), info.filter)
+      case Some(_) =>
+    }
+  }
+
   /**
    * Send a message to the actor associated with this session, if there is
    * one.
    */
   def send(session: IoSession, message: MinaMessage) = {
-    for (actor <- IoHandlerActorAdapter.actorFor(session)) {
-      if (IoHandlerActorAdapter.filterFor(session) contains classOfObj(message)) {
-        actor ! message
-      }
+    val info = IoHandlerActorAdapter.sessionInfo(session)
+    for (actor <- info.actor; if info.filter contains MinaMessage.classOfObj(message)) {
+      actor ! message
     }
   }
 
@@ -76,17 +88,9 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
    * is associated with the session, run a block of code instead.
    */
   def sendOr(session: IoSession, message: => MinaMessage)(f: => Unit) = {
-    IoHandlerActorAdapter.actorFor(session) match {
+    IoHandlerActorAdapter.sessionInfo(session).actor match {
       case None => f
       case Some(actor) => actor ! message
-    }
-  }
-
-  def sessionCreated(session: IoSession) = {
-    // don't overwrite an existing actor
-    IoHandlerActorAdapter.actorFor(session) match {
-      case None => session.setAttribute(IoHandlerActorAdapter.ACTOR_KEY, actorFactory(session))
-      case Some(_) =>
     }
   }
 
@@ -105,33 +109,35 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
 
   def sessionClosed(session: IoSession) = {
     send(session, MinaMessage.SessionClosed)
-    session.removeAttribute(IoHandlerActorAdapter.ACTOR_KEY)
+    IoHandlerActorAdapter.sessionInfo.remove(session)
   }
 }
 
 
 object IoHandlerActorAdapter {
-  private val ACTOR_KEY = "scala.mina.actor".intern
-  private val FILTER_KEY = "scala.mina.filter".intern
-
   /**
-   * Return the actor associated with a Mina session, if any.
-   * An actor is created for each new Mina session automatically by the
-   * factory passed to an `IoHandlerActorAdapter`, or can be
-   * set manually by `setActorFor`.
+   * Track state for each existing session by imitating a map.
    */
-  def actorFor(session: IoSession): Option[Actor] = {
-    val actor = session.getAttribute(ACTOR_KEY).asInstanceOf[Actor]
-    if (actor == null) None else Some(actor)
-  }
+  object sessionInfo {
+    private val KEY = "scala.mina.session_info".intern
 
-  /**
-   * Manually set the actor that should receive I/O event messages for a
-   * given Mina `IoSession`.
-   */
-  def setActorFor(session: IoSession, actor: Actor) = session.setAttribute(ACTOR_KEY, actor)
-  
-  def filterFor(session: IoSession) = {
-    session.getAttribute(FILTER_KEY, MinaMessage.defaultFilter).asInstanceOf[MinaMessage.Filter]
+    def apply(session: IoSession): SessionInfo = {
+      val info = session.getAttribute(KEY).asInstanceOf[SessionInfo]
+      if (info == null) {
+        val newInfo = SessionInfo(None, MinaMessage.defaultFilter)
+        session.setAttribute(KEY, newInfo)
+        newInfo
+      } else {
+        info
+      }
+    }
+
+    def update(session: IoSession, info: SessionInfo): Unit = {
+      session.setAttribute(KEY, info)
+    }
+
+    def remove(session: IoSession): Unit = {
+      session.removeAttribute(KEY)
+    }
   }
 }
