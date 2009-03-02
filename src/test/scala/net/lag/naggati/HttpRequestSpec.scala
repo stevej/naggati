@@ -100,7 +100,6 @@ hello!"""
     }
 
     "parse a simple http request" in {
-      3 mustEqual 3
       val decoder = new Decoder(HttpRequestDecoder.readRequest)
       quickDecode(decoder, TEST1)
 

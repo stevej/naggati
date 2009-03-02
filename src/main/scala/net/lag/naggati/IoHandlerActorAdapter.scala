@@ -119,7 +119,7 @@ object IoHandlerActorAdapter {
    * Track state for each existing session by imitating a map.
    */
   object sessionInfo {
-    private val KEY = "scala.mina.session_info".intern
+    val KEY = "scala.mina.session_info".intern
 
     def apply(session: IoSession): SessionInfo = {
       val info = session.getAttribute(KEY).asInstanceOf[SessionInfo]
@@ -147,5 +147,37 @@ object IoHandlerActorAdapter {
    */
   def setActorFor(session: IoSession, actor: Actor) = {
     sessionInfo(session) = SessionInfo(Some(actor), sessionInfo(session).filter)
+  }
+
+  /**
+   * Add or remove message types from the incoming-message filter by using
+   * the `+=` and `-=` operators.
+   */
+  def filter(session: IoSession) = new {
+    val info = sessionInfo(session)
+
+    def +=(t: Class[_ <: MinaMessage]) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter + t)
+    }
+
+    def -=(t: Class[_ <: MinaMessage]) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter - t)
+    }
+
+    def +=[T <: MinaMessage](obj: T) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter + MinaMessage.classOfObj(obj))
+    }
+
+    def -=[T <: MinaMessage](obj: T) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter - MinaMessage.classOfObj(obj))
+    }
+
+    def +=(set: Set[Class[_ <: MinaMessage]]) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter ++ set)
+    }
+
+    def -=(set: Set[Class[_ <: MinaMessage]]) = {
+      sessionInfo(session) = SessionInfo(info.actor, info.filter -- set)
+    }
   }
 }
