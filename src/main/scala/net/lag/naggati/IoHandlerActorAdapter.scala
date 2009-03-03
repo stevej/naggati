@@ -67,7 +67,8 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
     // don't overwrite an existing actor
     info.actor match {
       case None =>
-        IoHandlerActorAdapter.sessionInfo(session) = SessionInfo(Some(actorFactory(session)), info.filter)
+        val actor = actorFactory(session)
+        IoHandlerActorAdapter.sessionInfo(session) = SessionInfo(if (actor == null) None else Some(actor), info.filter)
       case Some(_) =>
     }
   }
@@ -90,7 +91,8 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
   def sendOr(session: IoSession, message: => MinaMessage)(f: => Unit) = {
     IoHandlerActorAdapter.sessionInfo(session).actor match {
       case None => f
-      case Some(actor) => actor ! message
+      case Some(actor) =>
+        actor ! message
     }
   }
 
@@ -145,7 +147,7 @@ object IoHandlerActorAdapter {
    * Manually set the actor that should receive I/O event messages for a
    * given Mina `IoSession`.
    */
-  def setActorFor(session: IoSession, actor: Actor) = {
+  def setActorFor(session: IoSession, actor: Actor): Unit = {
     sessionInfo(session) = SessionInfo(Some(actor), sessionInfo(session).filter)
   }
 
