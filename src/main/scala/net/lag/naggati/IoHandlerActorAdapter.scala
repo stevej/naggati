@@ -65,10 +65,12 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
   def sessionCreated(session: IoSession) = {
     val info = IoHandlerActorAdapter.sessionInfo(session)
     // don't overwrite an existing actor
-    info.actor match {
+    IoHandlerActorAdapter.sessionInfo(session).actor match {
       case None =>
         val actor = actorFactory(session)
-        IoHandlerActorAdapter.sessionInfo(session) = SessionInfo(if (actor == null) None else Some(actor), info.filter)
+        // actor may have modified the SessionInfo filter
+        val filter = IoHandlerActorAdapter.sessionInfo(session).filter
+        IoHandlerActorAdapter.sessionInfo(session) = SessionInfo(if (actor == null) None else Some(actor), filter)
       case Some(_) =>
     }
   }
@@ -89,10 +91,13 @@ class IoHandlerActorAdapter(val actorFactory: (IoSession) => Actor) extends IoHa
    * is associated with the session, run a block of code instead.
    */
   def sendOr(session: IoSession, message: => MinaMessage)(f: => Unit) = {
-    IoHandlerActorAdapter.sessionInfo(session).actor match {
+    val info = IoHandlerActorAdapter.sessionInfo(session)
+    info.actor match {
       case None => f
       case Some(actor) =>
-        actor ! message
+        if (info.filter contains MinaMessage.classOfObj(message)) {
+          actor ! message
+        }
     }
   }
 
