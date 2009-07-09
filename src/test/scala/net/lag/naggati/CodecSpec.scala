@@ -16,6 +16,7 @@
 
 package net.lag.naggati
 
+import net.lag.extensions._
 import net.lag.naggati.Steps._
 import org.apache.mina.core.buffer.IoBuffer
 import org.apache.mina.core.filterchain.IoFilter
@@ -260,6 +261,64 @@ object CodecSpec extends Specification {
       buffer.flip
       quickDecode(decoder, buffer)
       written mustEqual List("cat", 23, "yay!")
+    }
+
+    "compose readByteBuffer" in {
+      // 1-byte "type" field indicates if a string or int follows
+      val step = readByteBuffer(1) { buffer =>
+        val datatype = buffer(0)
+        if ((datatype & 0x80) == 0) {
+          readByteBuffer(datatype & 0x7f) { bytes =>
+            state.out.write(new String(bytes, "UTF-8"))
+            End
+          }
+        } else {
+          readInt32 { n =>
+            state.out.write(n)
+            End
+          }
+        }
+      }
+      val decoder = new Decoder(step)
+
+      val buffer = IoBuffer.allocate(14)
+      buffer.order(ByteOrder.BIG_ENDIAN)
+      buffer.put(3.toByte)
+      buffer.put("cat".getBytes)
+      buffer.put(0xff.toByte)
+      buffer.putInt(23)
+      buffer.put(4.toByte)
+      buffer.put("yay!".getBytes)
+      buffer.flip
+      quickDecode(decoder, buffer)
+      written mustEqual List("cat", 23, "yay!")
+    }
+
+    "readByteBuffer composes with readDelimiter and readByteBuffer" in {
+      val step = readByteBuffer(12) { buffer =>
+        state.out.write(buffer)
+        readDelimiterBuffer(0x00.toByte) { buffer =>
+          state.out.write(buffer)
+          readByteBuffer(2) { buffer =>
+            state.out.write(buffer)
+            readByteBuffer(2) { buffer =>
+              state.out.write(buffer)
+              End
+            }
+          }
+        }
+      }
+
+      val decoder = new Decoder(step)
+      decoder.decode(fakeSession, IoBuffer.wrap(Array(0xed, 0x82, 0x01, 0x00, 0x00, 0x01, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x03, 0x63, 0x6f, 0x6d,
+        0x00, 0x00, 0x01, 0x00, 0x01).map(_.toByte)), fakeDecoderOutput)
+      written(0).asInstanceOf[Array[Byte]].hexlify mustEqual Array(0xed, 0x82, 0x01, 0x00, 0x00, 0x01, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00).map { _.toByte }.hexlify
+      written(1).asInstanceOf[Array[Byte]].hexlify mustEqual Array(0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x03, 0x63, 0x6f, 0x6d,
+          0x00).map { _.toByte }.hexlify
+      written(2).asInstanceOf[Array[Byte]].hexlify mustEqual Array(0x00, 0x01).map { _.toByte }.hexlify
+      written(3).asInstanceOf[Array[Byte]].hexlify mustEqual Array(0x00, 0x01).map { _.toByte }.hexlify
     }
 
     "chain 3 implicit steps together" in {
