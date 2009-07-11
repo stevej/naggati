@@ -321,6 +321,20 @@ object CodecSpec extends Specification {
       written(3).asInstanceOf[Array[Byte]].hexlify mustEqual Array(0x00, 0x01).map { _.toByte }.hexlify
     }
 
+    "readAll reads the entire packet" in {
+      val step = readAll { buffer =>
+        state.out.write(buffer)
+        End
+      }
+      val decoder = new Decoder(step)
+      val bytes = Array(0x01, 0x02, 0x03, 0x04, 0x05).map { _.toByte }
+
+      decoder.decode(fakeSession, IoBuffer.wrap(bytes), fakeDecoderOutput)
+
+      written mustNotBe Nil
+      written(0).asInstanceOf[Array[Byte]].hexlify mustEqual bytes.hexlify
+    }
+
     "chain 3 implicit steps together" in {
       var list: List[String] = Nil
       val step1 = step { list = "a" :: list; COMPLETE }

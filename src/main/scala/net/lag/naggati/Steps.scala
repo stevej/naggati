@@ -39,6 +39,26 @@ object Steps {
   def step(f: => StepResult): Step = new Step { def apply() = { f } }
 
   /**
+   * Executes next step with all bytes in the buffer. This works best
+   * when used with a connection-less protocol like UDP where everything
+   * must come in one packet. This will not work well with TCP if fragmentation
+   * has occurred, you might only see a partial packet.
+   *
+   * The creation and copying of a temporary byte buffer may have a small
+   * performance penalty.
+   */
+  def readAll(process: Array[Byte] => Step) = step {
+    if (state.buffer.limit - state.buffer.position == 0) {
+      NEED_DATA
+    } else {
+      val byteBuffer = new Array[Byte](state.buffer.capacity)
+      state.buffer.get(byteBuffer)
+      state.nextStep = process(byteBuffer)
+      COMPLETE
+    }
+  }
+
+  /**
    * Ensure that a certain number of bytes is buffered before executing the
    * next step, calling `getCount` each time new data arrives, to
    * recompute the total number of bytes desired. If the desired number of
