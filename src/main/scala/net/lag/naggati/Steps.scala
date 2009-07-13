@@ -253,7 +253,22 @@ object Steps {
    */
   def readInt8(process: (Byte) => Step): Step = readBytes(1) { process(state.buffer.get) }
 
-  // read 4-byte ints:
+  /**
+   * Read a 16-bit int and pass in on to the next step.
+   */
+  def readInt16(process: (Short) => Step): Step = readInt16BE(process)
+  def readInt16BE(process: (Short) => Step): Step = readBytes(2) {
+    state.buffer.order(ByteOrder.BIG_ENDIAN)
+    process(state.buffer.getShort)
+  }
+  def readInt16LE(process: (Short) => Step): Step = readBytes(2) {
+    state.buffer.order(ByteOrder.LITTLE_ENDIAN)
+    process(state.buffer.getShort)
+  }
+
+  /**
+   * Read a 32-bit int and pass in on to the next step.
+   */
   def readInt32(process: (Int) => Step): Step = readInt32BE(process)
   def readInt32BE(process: (Int) => Step): Step = readBytes(4) {
     state.buffer.order(ByteOrder.BIG_ENDIAN)
@@ -262,5 +277,31 @@ object Steps {
   def readInt32LE(process: (Int) => Step): Step = readBytes(4) {
     state.buffer.order(ByteOrder.LITTLE_ENDIAN)
     process(state.buffer.getInt)
+  }
+
+  /**
+   * Read a 64-bit int and pass in on to the next step.
+   */
+  def readInt64(process: (Long) => Step): Step = readInt64BE(process)
+  def readInt64BE(process: (Long) => Step): Step = readBytes(8) {
+    state.buffer.order(ByteOrder.BIG_ENDIAN)
+    process(state.buffer.getLong)
+  }
+  def readInt64LE(process: (Long) => Step): Step = readBytes(8) {
+    state.buffer.order(ByteOrder.LITTLE_ENDIAN)
+    process(state.buffer.getLong)
+  }
+
+  /**
+   * Read a 64-bit double and pass in on to the next step.
+   */
+  def readDouble(process: (Double) => Step): Step = readDoubleBE(process)
+  def readDoubleBE(process: (Double) => Step): Step = readBytes(8) {
+    state.buffer.order(ByteOrder.BIG_ENDIAN)
+    process(state.buffer.getDouble)
+  }
+  def readDoubleLE(process: (Double) => Step): Step = readBytes(8) {
+    state.buffer.order(ByteOrder.LITTLE_ENDIAN)
+    process(state.buffer.getDouble)
   }
 }
