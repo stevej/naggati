@@ -2,7 +2,7 @@
   <info
     organisation="net.lag"
     module="naggati"
-    revision="0.7"
+    revision="0.7.1"
     e:testclass="net.lag.naggati.TestRunner"
     e:buildpackage="net/lag/naggati"
   />

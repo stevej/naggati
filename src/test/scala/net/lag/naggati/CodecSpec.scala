@@ -59,14 +59,15 @@ object CodecSpec extends Specification {
         End
       }
 
-      val decoder = new Decoder(step)
-      quickDecode(decoder, "xx")
-      written mustEqual Nil
+      val decoder = new TestDecoder(step)
+      decoder("xx") mustEqual Nil
       scored mustEqual false
-      quickDecode(decoder, "y")
-      written mustEqual Nil
+      decoder("y") mustEqual Nil
       scored mustEqual true
     }
+
+
+    // FIXME: convert these other tests to use TestDecoder too.
 
     "read a variable number of bytes" in {
       var n = 2

@@ -16,8 +16,10 @@
 
 package net.lag.naggati
 
+import scala.collection.mutable
 import org.apache.mina.core.buffer.IoBuffer
-import org.apache.mina.core.session.IoSession
+import org.apache.mina.core.filterchain.IoFilter
+import org.apache.mina.core.session.{DummySession, IoSession}
 import org.apache.mina.filter.codec._
 
 
@@ -95,4 +97,27 @@ class Decoder(private val firstStep: Step) extends ProtocolDecoder {
     state.buffer.compact
     state.buffer.limit(state.buffer.position)
   }
+}
+
+
+// for use in unit tests
+class TestDecoder(firstStep: Step) {
+  private val fakeDecoderOutput = new ProtocolDecoderOutput {
+    override def flush(nextFilter: IoFilter.NextFilter, s: IoSession) = {}
+    override def write(obj: AnyRef) = written += obj
+  }
+
+  private val fakeSession: IoSession = new DummySession
+  val written = new mutable.ListBuffer[AnyRef]
+  val decoder = new Decoder(firstStep)
+
+  def apply(buffer: IoBuffer): List[AnyRef] = {
+    decoder.decode(fakeSession, buffer, fakeDecoderOutput)
+    written.toList
+  }
+
+  def apply(s: String): List[AnyRef] = apply(s.getBytes)
+  def apply(x: Array[Byte]): List[AnyRef] = apply(IoBuffer.wrap(x))
+
+  def write(obj: AnyRef) = fakeDecoderOutput.write(obj)
 }
