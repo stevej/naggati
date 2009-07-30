@@ -100,10 +100,10 @@ object TagSpec extends Specification {
     "catch errors" in {
       // tag type too long
       val decoder = new TagDecoder
-      decoder.quickDecode("9F8CD7FAF53E00") must throwA(new ProtocolError(""))
+      decoder.quickDecode("9F8CD7FAF53E00") must throwA[ProtocolError]
       // size field too long
       val decoder2 = new TagDecoder
-      decoder2.quickDecode("C0850000000000") must throwA(new ProtocolError(""))
+      decoder2.quickDecode("C0850000000000") must throwA[ProtocolError]
     }
   }
 }

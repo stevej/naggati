@@ -16,14 +16,14 @@
 
 package net.lag.naggati
 
-import net.lag.extensions._
-import net.lag.naggati.Steps._
-import org.apache.mina.core.buffer.IoBuffer
-import org.apache.mina.core.filterchain.IoFilter
-import org.apache.mina.core.session.{DummySession, IoSession}
-import org.apache.mina.filter.codec._
-import org.specs._
-import java.nio.ByteOrder
+import _root_.java.nio.ByteOrder
+import _root_.net.lag.extensions._
+import _root_.net.lag.naggati.Steps._
+import _root_.org.apache.mina.core.buffer.IoBuffer
+import _root_.org.apache.mina.core.filterchain.IoFilter
+import _root_.org.apache.mina.core.session.{DummySession, IoSession}
+import _root_.org.apache.mina.filter.codec._
+import _root_.org.specs._
 
 
 object CodecSpec extends Specification {
