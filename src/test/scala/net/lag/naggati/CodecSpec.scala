@@ -59,10 +59,10 @@ object CodecSpec extends Specification {
         End
       }
 
-      val decoder = new TestDecoder(step)
-      decoder("xx") mustEqual Nil
+      val decoder = new TestDecoder()
+      decoder("xx", step) mustEqual Nil
       scored mustEqual false
-      decoder("y") mustEqual Nil
+      decoder("y", step) mustEqual Nil
       scored mustEqual true
     }
 

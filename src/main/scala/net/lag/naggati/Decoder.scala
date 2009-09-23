@@ -101,23 +101,24 @@ class Decoder(private val firstStep: Step) extends ProtocolDecoder {
 
 
 // for use in unit tests
-class TestDecoder(firstStep: Step) {
-  private val fakeDecoderOutput = new ProtocolDecoderOutput {
+class TestDecoder {
+  val fakeDecoderOutput = new ProtocolDecoderOutput {
     override def flush(nextFilter: IoFilter.NextFilter, s: IoSession) = {}
     override def write(obj: AnyRef) = written += obj
   }
 
-  private val fakeSession: IoSession = new DummySession
+  val fakeSession: IoSession = new DummySession
   val written = new mutable.ListBuffer[AnyRef]
-  val decoder = new Decoder(firstStep)
 
-  def apply(buffer: IoBuffer): List[AnyRef] = {
+  def apply(buffer: IoBuffer, firstStep: Step): List[AnyRef] = {
+    written.clear()
+    val decoder = new Decoder(firstStep)
     decoder.decode(fakeSession, buffer, fakeDecoderOutput)
     written.toList
   }
 
-  def apply(s: String): List[AnyRef] = apply(s.getBytes)
-  def apply(x: Array[Byte]): List[AnyRef] = apply(IoBuffer.wrap(x))
+  def apply(s: String, firstStep: Step): List[AnyRef] = apply(s.getBytes, firstStep)
+  def apply(x: Array[Byte], firstStep: Step): List[AnyRef] = apply(IoBuffer.wrap(x), firstStep)
 
   def write(obj: AnyRef) = fakeDecoderOutput.write(obj)
 }
