@@ -22,6 +22,10 @@ import org.apache.mina.core.session.IoSession
 import org.apache.mina.filter.codec.ProtocolDecoderOutput
 
 
+object State {
+  val EMPTY_BUFFER = IoBuffer.wrap(new Array[Byte](0))
+}
+
 /**
  * Container for state associated with a Mina `IoSession`,
  * including the current incoming data buffer and arbitrary key/value data
@@ -33,7 +37,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
   /**
    * Current (mina) buffer being processed.
    */
-  var buffer: IoBuffer = IoBuffer.EMPTY_BUFFER
+  var buffer: IoBuffer = State.EMPTY_BUFFER
 
   // track whether we allocated this IoBuffer or it was passed in from mina
   private[naggati] var dynamicBuffer = false
@@ -103,7 +107,7 @@ class State protected[naggati](firstStep: Step, val session: IoSession, val out:
     data.clear
     currentStep = firstStep
     nextStep = End
-    buffer = IoBuffer.EMPTY_BUFFER
+    buffer = State.EMPTY_BUFFER
     dynamicBuffer = false
   }
 
