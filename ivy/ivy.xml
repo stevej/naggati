@@ -30,5 +30,6 @@
     <dependency org="org.slf4j" name="slf4j-jdk14" rev="1.5.2" />
     <dependency org="org.slf4j" name="slf4j-api" rev="1.5.2" />
     <dependency org="net.lag" name="configgy" rev="1.4" />
+    <dependency org="com.twitter" name="twitterActors" rev="1.0.0" />
   </dependencies>
 </ivy-module>
