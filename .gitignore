@@ -1,4 +1,9 @@
 target
 dist
-tomservo.tmproj
-
+naggati.tmproj
+lib_managed/
+project/boot/
+project/plugins/target
+project/plugins/lib_managed/
+project/plugins/project/
+project/plugins/src_managed/
