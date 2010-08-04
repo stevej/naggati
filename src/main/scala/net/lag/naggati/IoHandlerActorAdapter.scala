@@ -16,7 +16,7 @@
 
 package net.lag.naggati
 
-import scala.actors.Actor
+import com.twitter.actors.Actor
 import scala.collection.immutable
 import org.apache.mina.core.service.IoHandler
 import org.apache.mina.core.session.{IdleStatus, IoSession}

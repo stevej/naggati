@@ -18,7 +18,7 @@ package net.lag.naggati
 
 import org.apache.mina.core.session.{DummySession, IoSession}
 import org.specs._
-import scala.actors.Actor
+import com.twitter.actors.Actor
 import scala.collection.mutable
 
 
